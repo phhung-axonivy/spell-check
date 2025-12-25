@@ -203,7 +203,7 @@ jobs:
           cd target-repo
           cspell lint --config ../cspell.json > $REPO.txt
 
-      - name: Upload spelling results
+      - name: Upload Spell Check Results
         if: failure()
         uses: actions/upload-artifact@v4
         with:

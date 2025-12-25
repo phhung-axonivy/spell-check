@@ -185,7 +185,8 @@ jobs:
               "HandySignatur",
               "handy-signatur",
               "SignaturBox",
-              "Signatur-Box"
+              "Signatur-Box",
+              "Analyser"
             ]
           }
           EOF
@@ -199,7 +200,7 @@ jobs:
       - name: Run CSpell - Spell Check
         run: |
           REPO="${{ matrix.repo }}"
-          echo "🔤🔍 ${{ env.WORKING_ORG }}/$REPO ..."
+          echo "🔤🔍 ${{ env.WORKING_ORG }}/$REPO - branch:${{ github.event.inputs.workingBranch }} ..."
           cd target-repo
           cspell lint --config ../cspell.json > $REPO.txt
 

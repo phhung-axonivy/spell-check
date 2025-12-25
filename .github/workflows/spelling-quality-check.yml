@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       workingRepos:
-        description: 'Comma-separated list of repository names. e.g., a-trust-connector, process-analyser, ... If this field is left empty, spell checking will be applied to all market extensions.'
+        description: 'Comma-separated list of repository names. e.g., a-trust-connector,process-analyser If this field is left empty, spell checking will be applied to all market extensions.'
       workingBranch:
         description: 'Which branch needs to be spell-checked? e.g., master, release/12.0, ...'
         default: 'master'

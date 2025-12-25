@@ -56,25 +56,56 @@ jobs:
 
       - name: Check CSpell version
         run: cspell --version
-      - name: Debug list root files
+
+      - name: Create custom cspell config
         run: |
-          echo "Current working dir: $(pwd)"
-          echo "Workspace: $GITHUB_WORKSPACE"
-          ls -al $GITHUB_WORKSPACE
+          cat > cspell.json <<EOF
+          {
+            "version": "0.2",
+            "files": [
+              "**/*.md",
+              "**/*_en.yaml",
+              "**/variables.yaml",
+              "**/*.xhtml"
+            ],
+            "ignorePaths": [
+              "**/*_de.md",
+              "**/*_DE.md",
+              "**/webContent/layouts/frame*.xhtml",
+              "**/webContent/layouts/basic*.xhtml",
+              "**/webContent/layouts/includes/*.xhtml"
+            ],
+            "words": [
+              "AxonIvy", "axonactive", "ivy", "ivyteam", "wawa", "Up2date",
+              "e2e", "panelgrid", "toggleable", "orderlist", "tablewrapper",
+              "hoverable", "gridlines", "formgrid", "maxdate",
+              "mindate", "chkbox", "confirmdialog", "maximizable",
+              "outputlabel", "Unsorting", "nogutter", "navicon",
+              "webcontent", "Recordset", "Recordsets", "fileref", "newkey",
+              "keyout", "inkey", "Aspose", "primeflex", "primefaces",
+              "dynaForm", "dyna", "Startable", "caseprocessviewer", "EMLX",
+              "visualvm", "vertexai", "webservice", "apikey", "talentlink",
+              "Successfactors", "statefuldatatable", "datatable", "Threema",
+              "threemaid", "Keypair", "azureopenai", "Skribble", "SFPT",
+              "rebex", "sshkey", "sshpassphrase", "SOQL", "patterndemos",
+              "suneditor", "chartjs", "datalabels", "metaproc", "masterdetail",
+              "Weblate", "mailstore", "XOAUTH", "sasl", "imap", "imaps",
+              "clazz", "intellix", "Hubspot", "Genderize", "formeditordemos",
+              "DocuWare", "filecabinetid", "DocuSign", "daemonless", "npipe",
+              "docfactory", "deepl", "glassfish", "HSQL", "hsqldb", "Liquibase",
+              "cmseditor", "casemailcomponent", "nbsp", "Servicebus", "axonivypdf",
+              "axonivyexpress", "axonivycells", "approvaldecision", "Analyser",
+              "chatbots", "Keyphrase", "aiassistant", "adobesign", "ESIGN", "HANA",
+              "atrust", "HandySignatur", "handy-signatur", "SignaturBox", "Signatur-Box"
+            ]
+          }
+          EOF
+
       - uses: actions/checkout@v4
         with:
           repository: ${{ env.WORKING_ORG }}/${{ matrix.repo }}
           path: target-repo
           ref: ${{ github.event.inputs.workingBranch }}
-
-      - name: Debug list root files
-        run: |
-          echo "Current working dir: $(pwd)"
-          echo "Workspace: $GITHUB_WORKSPACE"
-          ls -al $GITHUB_WORKSPACE
-
-      - name: Copy cspell.json config
-        run: cp $GITHUB_WORKSPACE/cspell.json target-repo/
 
       - name: Run CSpell - Spell Check
         run: |

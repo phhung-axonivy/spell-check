@@ -63,6 +63,12 @@ jobs:
           path: target-repo
           ref: ${{ github.event.inputs.workingBranch }}
 
+      - name: Debug: list root files
+        run: |
+          echo "Current working dir: $(pwd)"
+          echo "Workspace: $GITHUB_WORKSPACE"
+          ls -al $GITHUB_WORKSPACE
+
       - name: Copy cspell.json config
         run: cp $GITHUB_WORKSPACE/cspell.json target-repo/
 

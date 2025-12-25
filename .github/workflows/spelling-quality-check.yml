@@ -1,0 +1,200 @@
+name: Spelling Quality Check
+
+permissions:
+  contents: read
+on:
+  workflow_dispatch:
+    inputs:
+      workingOrgs:
+        description: 'Comma-separated orgs to check'
+        default: 'axonivy-market'
+      workingRepos:
+        description: 'Comma-separated list of repo names. (e.g., a-trust-connector) (optional)'
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      repo-matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Generate matrix dynamically
+        id: set-matrix
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ORG="${{ github.event.inputs.workingOrgs }}"
+          INPUT_REPOS="${{ github.event.inputs.workingRepos }}"
+          if [ -n "$INPUT_REPOS" ]; then
+            REPOS=$(jq -R 'split(",")' <<< "$INPUT_REPOS")
+          else
+          # Get full repo list from org
+            REPOS=$(gh repo list "$ORG" --limit 1000 --json name -q '[.[].name]')
+            echo "📦 Found repos: $REPOS"
+          fi
+          # Build matrix JSON object
+          MATRIX_JSON=$(jq -n --argjson repos "$REPOS" '{ include: $repos }')
+          echo "matrix<<EOF" >> $GITHUB_OUTPUT
+          echo "$MATRIX_JSON" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+  spelling-quality-check:
+    needs: prepare
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        repo: ${{ fromJson(needs.prepare.outputs.repo-matrix).include }}
+
+    steps:
+      - name: Install CSpell
+        run: npm install -g cspell@latest
+
+      - name: Check CSpell version
+        run: cspell --version
+
+      - name: Create custom cspell config
+        run: |
+          cat > cspell.json <<EOF
+          {
+            "version": "0.2",
+            "files": [
+              "**/*.md",
+              "**/*_en.yaml",
+              "**/variables.yaml",
+              "**/*.xhtml"
+            ],
+            "ignorePaths": [
+              "**/*_de.md",
+              "**/*_DE.md",
+              "**/webContent/layouts/frame*.xhtml",
+              "**/webContent/layouts/basic*.xhtml",
+              "**/webContent/layouts/includes/*.xhtml",
+              ".git/**",
+              ".github/**",
+              ".settings/**",
+              ".gitignore",
+              ".project",
+              ".editorconfig",
+              ".classpath"
+            ],
+            "words": [
+              "AxonIvy",
+              "axonactive",
+              "Up2date",
+              "ivyteam",
+              "wawa",
+              "ivy",
+              "e2e",
+              "panelgrid",
+              "toggleable",
+              "orderlist",
+              "tablewrapper",
+              "hoverable",
+              "gridlines",
+              "formgrid",
+              "maxdate",
+              "mindate",
+              "chkbox",
+              "confirmdialog",
+              "maximizable",
+              "outputlabel",
+              "Unsorting",
+              "nogutter",
+              "navicon",
+              "webcontent",
+              "Recordset",
+              "Recordsets",
+              "fileref",
+              "newkey",
+              "keyout",
+              "inkey",
+              "Aspose",
+              "primeflex",
+              "primefaces",
+              "dynaForm",
+              "dyna",
+              "Startable",
+              "caseprocessviewer",
+              "EMLX",
+              "visualvm",
+              "vertexai",
+              "webservice",
+              "apikey",
+              "talentlink",
+              "Successfactors",
+              "statefuldatatable",
+              "datatable",
+              "Threema",
+              "threemaid",
+              "Keypair",
+              "azureopenai",
+              "Skribble",
+              "SFPT",
+              "rebex",
+              "sshkey",
+              "sshpassphrase",
+              "SOQL",
+              "patterndemos",
+              "suneditor",
+              "chartjs",
+              "datalabels",
+              "metaproc",
+              "masterdetail",
+              "Weblate",
+              "mailstore",
+              "XOAUTH",
+              "sasl",
+              "imap",
+              "imaps",
+              "clazz",
+              "intellix",
+              "Hubspot",
+              "Genderize",
+              "formeditordemos",
+              "DocuWare",
+              "filecabinetid",
+              "DocuSign",
+              "daemonless",
+              "npipe",
+              "docfactory",
+              "deepl",
+              "glassfish",
+              "HSQL",
+              "hsqldb",
+              "Liquibase",
+              "cmseditor",
+              "casemailcomponent",
+              "nbsp",
+              "Servicebus",
+              "axonivypdf",
+              "axonivyexpress",
+              "axonivycells",
+              "approvaldecision",
+              "chatbots",
+              "Keyphrase",
+              "aiassistant",
+              "adobesign",
+              "ESIGN",
+              "HANA",
+              "atrust"
+            ]
+          }
+          EOF
+
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ github.event.inputs.workingOrgs }}/${{ matrix.repo }}
+          path: target-repo
+
+      - name: Run CSpell - Spelling Quality Check
+        run: |
+          REPO="${{ matrix.repo }}"
+          echo "🚨 ${{ github.event.inputs.workingOrgs }}/$REPO ..."
+          cd target-repo
+          cspell lint --config ../cspell.json > $REPO.txt
+
+      - name: Upload spelling results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.repo }}
+          path: target-repo/*.txt

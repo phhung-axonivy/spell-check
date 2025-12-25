@@ -12,6 +12,7 @@ on:
         description: 'Comma-separated list of repo names. (e.g., a-trust-connector) (optional)'
       workingBranch:
         description: 'The branch need to be checked. (e.g., master, release/12.0, ...)'
+        default: 'master'
         required: true
 
 jobs:

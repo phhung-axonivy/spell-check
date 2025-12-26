@@ -54,7 +54,7 @@ jobs:
       - name: Check if branch exists in target repository
         id: check_branch
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.GH }}
         run: |
           ORG="${{ env.WORKING_ORG }}"
           REPO="${{ matrix.repo }}"
@@ -81,7 +81,7 @@ jobs:
       - name: Install CSpell
         if: steps.check_branch.outputs.exists == 'true'
         run: |
-          npm install -g cspell@latest
+          npm install -g cspell@8.14.1
           echo "Cspell Version:"
           cspell --version
 
@@ -115,8 +115,8 @@ jobs:
               "dynaForm", "dyna", "Startable", "caseprocessviewer", "EMLX",
               "visualvm", "vertexai", "webservice", "apikey", "talentlink",
               "Successfactors", "statefuldatatable", "datatable", "Threema",
-              "threemaid", "Keypair", "azureopenai", "Skribble", "SFPT",
-              "rebex", "sshkey", "sshpassphrase", "SOQL", "patterndemos",
+              "threemaid", "Keypair", "azureopenai", "Skribble", "SFTP",
+              "rebex", "sshkey", "Keyphrase", "sshpassphrase", "patterndemos",
               "suneditor", "chartjs", "datalabels", "metaproc", "masterdetail",
               "Weblate", "mailstore", "XOAUTH", "sasl", "imap", "imaps",
               "clazz", "intellix", "Hubspot", "Genderize", "formeditordemos",
@@ -124,7 +124,7 @@ jobs:
               "docfactory", "deepl", "glassfish", "HSQL", "hsqldb", "Liquibase",
               "cmseditor", "casemailcomponent", "nbsp", "Servicebus", "axonivypdf",
               "axonivyexpress", "axonivycells", "approvaldecision", "Analyser",
-              "chatbots", "Keyphrase", "aiassistant", "adobesign", "atrust",
+              "chatbots", "aiassistant", "adobesign", "atrust", "SOQL",
               "HandySignatur", "handy-signatur", "SignaturBox", "Signatur-Box"
             ]
           }
@@ -133,16 +133,12 @@ jobs:
       - name: Run CSpell - Spell Check
         if: steps.check_branch.outputs.exists == 'true'
         run: |
-          set +e
           REPO="${{ matrix.repo }}"
           echo "🔤🔍 ${{ env.WORKING_ORG }}/$REPO - branch:${{ github.event.inputs.workingBranch }} ..."
           cd target-repo
-          cspell lint --config ../cspell.json > "$REPO.txt"
-          CSPELL_EXIT=$?
-          if [ "$CSPELL_EXIT" -ne 0 ]; then
-            echo "Spell check failed for $REPO (exit code $CSPELL_EXIT). See $REPO.txt for details."
-          fi
-          exit "$CSPELL_EXIT"
+          CSPELL_EXIT=0
+          cspell lint --config ../cspell.json 2>&1 | tee "$REPO.txt"
+          CSPELL_EXIT=${PIPESTATUS[0]}
 
       - name: Upload Spell Check Results
         if: failure() && steps.check_branch.outputs.exists == 'true'
@@ -150,3 +146,4 @@ jobs:
         with:
           name: ${{ matrix.repo }}
           path: target-repo/*.txt
+          if-no-files-found: warn

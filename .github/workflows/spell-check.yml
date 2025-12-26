@@ -34,7 +34,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        repo: ${{ fromJson(needs.prepare.outputs.repo-matrix).include }}
+        repo: ${{ fromJson(needs.prepare.outputs.matrix).include }}
 
     steps:
       - name: Check if branch exists in target repository

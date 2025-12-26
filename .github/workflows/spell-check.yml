@@ -21,6 +21,9 @@ jobs:
     outputs:
       repo-matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
+      - name: Checkout code     
+        uses: actions/checkout@v4
+
       - name: Generate matrix dynamically
         id: set-matrix
         env:

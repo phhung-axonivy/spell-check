@@ -34,6 +34,7 @@ jobs:
             REPOS=$(jq -R 'split(",")' <<< "$INPUT_REPOS")
           else
           # Get full repo list from org
+            chmod +x ./repo-collector.sh
             REPO_LIST=$(./repo-collector.sh)
             REPOS=$(echo "$REPO_LIST" | jq -Rs 'split("\n")[:-1]')
             echo "📦 Found repos: $REPOS"

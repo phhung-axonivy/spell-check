@@ -68,8 +68,7 @@ jobs:
         if: steps.check_branch.outputs.exists == 'true'
         run: |
           npm install -g cspell@8.14.1
-          echo "Cspell Version:"
-          cspell --version
+          echo "Cspell Version: ${cspell --version}"
 
       - name: Create custom cspell config
         if: steps.check_branch.outputs.exists == 'true'

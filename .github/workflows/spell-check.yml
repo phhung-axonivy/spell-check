@@ -23,6 +23,7 @@ jobs:
       - name: Generate matrix dynamically
         id: generate_matrix
         run: |
+          chmod +x ./generate-repo-matrix.sh
           ./generate-repo-matrix.sh ${{ github.event.inputs.workingRepos }}
     outputs:
       matrix: ${{ steps.generate_matrix.outputs.matrix }}

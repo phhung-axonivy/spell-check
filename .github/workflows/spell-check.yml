@@ -21,19 +21,10 @@ jobs:
     outputs:
       repo-matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - name: Configure Git
-        run: |
-          git config --global user.email "actions@github.com"
-          git config --global user.name "GitHub Actions"
-          echo ${{ env.GH_TOKEN2 }} > token.sh
-          gh auth login --with-token < token.sh
-          gh auth setup-git
-        env:
-          GH_TOKEN2: ${{ secrets.GH }}
-
       - name: Generate matrix dynamically
         id: set-matrix
         env:
+          GH_TOKEN: ${{ secrets.GH }}
           WORKING_ORG: ${{ env.WORKING_ORG }}
         run: |
           ORG="${WORKING_ORG}"
@@ -62,6 +53,8 @@ jobs:
     steps:
       - name: Check if branch exists in target repository
         id: check_branch
+        env:
+          GH_TOKEN: ${{ secrets.GH }}
         run: |
           ORG="${{ env.WORKING_ORG }}"
           REPO="${{ matrix.repo }}"
